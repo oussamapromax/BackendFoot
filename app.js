@@ -4,6 +4,13 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
+const userRouter = require('./routes/usersRouter');
+const terrainRouter = require('./routes/terrainRouter'); // Ensure this import is correct
+const reservationRouter = require('./routes/reservationRouter');
+const avisRouter = require('./routes/avisRouter');
+const notificationRouter = require('./routes/notificationRouter');
+const paymentRouter = require('./routes/paymentRouter');
+
 const { connectToMongoDb } = require("./config/db");
 
 require("dotenv").config();
@@ -26,6 +33,11 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/os", osRouter);
+app.use("/terrains", terrainRouter);
+app.use("/reservations", reservationRouter);
+app.use("/avis", avisRouter);
+app.use("/notifications", notificationRouter);
+app.use("/payements", paymentRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

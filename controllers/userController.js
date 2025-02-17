@@ -1,4 +1,8 @@
 const userModel = require('../models/userSchema');
+const Player = require('../models/Player');
+const Admin = require('../models/Admin');
+const Avis = require('../models/AvisModel');
+const Reservation = require('../models/ReservationModel');
 
 module.exports.addUserClient = async (req,res) => {
     try {
@@ -44,6 +48,96 @@ module.exports.addUserAdmin= async (req,res) => {
         res.status(500).json({message: error.message});
     }
 }
+
+module.exports.sInscrire = async (req, res) => {
+    try {
+      const { username, email, password, age } = req.body;
+      const user = new User({ username, email, password, age });
+      await user.sInscrire();
+      res.status(200).json({ user });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  module.exports.seConnecter = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
+      if (!user) throw new Error('User not found');
+  
+      await user.seConnecter(password);
+      res.status(200).json({ user });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  module.exports.modifierProfil = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await User.findById(id);
+      if (!user) throw new Error('User not found');
+  
+      await user.modifierProfil(req.body);
+      res.status(200).json({ user });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  module.exports.createAdmin = async (req, res) => {
+    try {
+      const { username, email, password } = req.body;
+      const admin = new Admin({ username, email, password, role: 'admin' });
+      await admin.sInscrire();
+      res.status(200).json({ admin });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
+module.exports.createPlayer = async (req, res) => {
+    try {
+        const { username, email, password, age } = req.body;
+        const roleClient = 'client';
+        const user = await User.create({
+            username, email, password, role: roleClient, age
+        });
+        const player = new Player(user);
+        res.status(200).json({ player });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports.giveAvis = async (req, res) => {
+    try {
+        const { userId, terrainId, rating, comment } = req.body;
+        const user = await User.findById(userId);
+        if (!user) throw new Error('User not found');
+
+        const player = new Player(user);
+        const avis = await player.giveAvis(terrainId, rating, comment);
+        res.status(200).json({ avis });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports.reserveTerrain = async (req, res) => {
+    try {
+        const { userId, terrainId, date } = req.body;
+        const user = await User.findById(userId);
+        if (!user) throw new Error('User not found');
+
+        const player = new Player(user);
+        const reservation = await player.reserveTerrain(terrainId, date);
+        res.status(200).json({ reservation });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 module.exports.getAllUsers= async (req,res) => {
     try {

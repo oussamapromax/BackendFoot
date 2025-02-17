@@ -46,6 +46,34 @@ userSchema.pre("save", async function (next) {
     next(error);
   }
 });
+userSchema.methods.sInscrire = async function () {
+  try {
+    await this.save();
+    return this;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+userSchema.methods.seConnecter = async function (password) {
+  try {
+    const isMatch = await bcrypt.compare(password, this.password);
+    if (!isMatch) throw new Error("Invalid credentials");
+    return this;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+userSchema.methods.modifierProfil = async function (newData) {
+  try {
+    Object.assign(this, newData);
+    await this.save();
+    return this;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 userSchema.post("save", async function (req, res, next) {
   console.log("new user was created & saved successfully");

@@ -16,5 +16,12 @@ router.get('/getAllUsersAgeBetMaxAgeMinAge',userController.getAllUsersAgeBetMaxA
 router.put('/updateuserById/:id',userController.updateuserById); 
 
 router.post('/addUserClientWithImg',upload.single("image_user"),userController.addUserClientWithImg); 
+router.post('/inscrire', userController.sInscrire);
+router.post('/connecter', userController.seConnecter);
+router.put('/modifier-profil/:id', userController.modifierProfil);
+router.post('/admin', userController.createAdmin);
+router.post('/player', userController.createPlayer);
+router.post('/give-avis', userController.giveAvis);
+router.post('/reserve-terrain', userController.reserveTerrain);
 
 module.exports = router;
