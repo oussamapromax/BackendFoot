@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./userSchema');
+const Avis = require('./AvisModel'); // Importation du modèle Terrain
+const Reservation = require('./reservationModel'); // Importation du modèle Reservation
 
 const playerSchema = new mongoose.Schema({
     notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Notification' }],
@@ -30,6 +32,10 @@ class Player extends PlayerModel {
 
     async reserveTerrain(terrainId, date) {
         try {
+             // Vérifier si le terrain existe
+             const terrain = await Terrain.findById(terrainId);
+             if (!terrain) throw new Error('Terrain non trouvé');
+             
             const reservation = new mongoose.models.Reservation({
                 userId: this._id,
                 terrainId,

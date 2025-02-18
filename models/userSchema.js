@@ -1,18 +1,21 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+
+const options = { discriminatorKey: "role", timestamps: true }; // Ajout du champ de discrimination
+
 const userSchema = new mongoose.Schema(
   {
     username: {
-        type: String,
-        required: true,
-        unique: true,
-      },
+      type: String,
+      required: true,
+      unique: true,
+    },
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
-      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
+      match: [/^\S+@\S+\.\S+$/, "Veuillez entrer une adresse e-mail valide"],
     },
     password: {
       type: String,
@@ -23,62 +26,34 @@ const userSchema = new mongoose.Schema(
         "Le mot de passe doit contenir au moins 8 caractères, une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial.",
       ],
     },
-    role: {
-      type: String,
-      enum: ["admin", "client", "infi"],
-    },
-    user_image: { type: String, require: false, default: "client.png" },
-    age: {type : Number },
-    count: {type : Number, default:'0'}
+    user_image: { type: String, default: "client.png" },
+    age: { type: Number },
+    count: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  options
 );
 
+// **Hash du mot de passe avant l'enregistrement**
 userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next(); // Ne hache que si le mot de passe est modifié
   try {
-    const salt = await bcrypt.genSalt();
-    const user = this;
-    user.password = await bcrypt.hash(user.password, salt);
-    //user.etat = false ;
-    user.count = user.count + 1;
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
     next(error);
   }
 });
-userSchema.methods.sInscrire = async function () {
-  try {
-    await this.save();
-    return this;
-  } catch (error) {
-    throw new Error(error.message);
-  }
+
+// **Méthode pour vérifier le mot de passe**
+userSchema.methods.verifierMotDePasse = async function (password) {
+  return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.seConnecter = async function (password) {
-  try {
-    const isMatch = await bcrypt.compare(password, this.password);
-    if (!isMatch) throw new Error("Invalid credentials");
-    return this;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-userSchema.methods.modifierProfil = async function (newData) {
-  try {
-    Object.assign(this, newData);
-    await this.save();
-    return this;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-userSchema.post("save", async function (req, res, next) {
-  console.log("new user was created & saved successfully");
-  next();
+// **Post-save middleware pour log**
+userSchema.post("save", function () {
+  console.log(`Nouvel utilisateur créé : ${this.username}`);
 });
 
-const user = mongoose.model("user", userSchema);
-module.exports = user;
+const User = mongoose.model("User", userSchema);
+module.exports = User;

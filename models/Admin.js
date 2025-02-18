@@ -1,4 +1,6 @@
 const User = require('./userSchema');
+const Terrain = require('./TerrainModel'); // Importation du modèle Terrain
+const Reservation = require('./reservationModel'); // Importation du modèle Reservation
 
 class Admin extends User {
   constructor(userData) {
