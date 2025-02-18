@@ -8,5 +8,10 @@ router.get('/', terrainController.getTerrains);
 router.get('/:id', terrainController.getTerrainById);
 router.put('/:id', terrainController.updateTerrain);
 router.delete('/:id', terrainController.deleteTerrain);
+// Nouvelles routes
+router.post('/:id/disponibilites', terrainController.ajouterDisponibilite); // Ajouter une disponibilité
+router.delete('/:id/disponibilites/:disponibiliteId', terrainController.supprimerDisponibilite); // Supprimer une disponibilité
+router.put('/:id/tarif', terrainController.mettreAJourTarif); // Mettre à jour le tarif horaire
+router.get('/statistiques', terrainController.statistique); // Obtenir des statistiques
 
 module.exports = router;

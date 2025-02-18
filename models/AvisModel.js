@@ -5,6 +5,7 @@ const avisSchema = new mongoose.Schema({
     terrainId: { type: mongoose.Schema.Types.ObjectId, ref: 'Terrain', required: true },
     rating: { type: Number, required: true },
     comment: { type: String },
+    date: { type: Date, default: Date.now }, // Date de l'avis
 });
 
 module.exports = mongoose.model('Avis', avisSchema);

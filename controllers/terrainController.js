@@ -52,3 +52,78 @@ exports.deleteTerrain = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
+
+// Ajouter une disponibilité à un terrain
+exports.ajouterDisponibilite = async (req, res) => {
+    try {
+        const { id } = req.params; // ID du terrain
+        const { date, heureDebut, heureFin, estDisponible } = req.body;
+
+        const terrain = await Terrain.findById(id);
+        if (!terrain) return res.status(404).json({ message: 'Terrain not found' });
+
+        terrain.disponibilites.push({ date, heureDebut, heureFin, estDisponible });
+        await terrain.save();
+
+        res.status(200).json({ message: 'Disponibilité ajoutée', terrain });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Supprimer une disponibilité d'un terrain
+exports.supprimerDisponibilite = async (req, res) => {
+    try {
+        const { id, disponibiliteId } = req.params; // ID du terrain et ID de la disponibilité
+
+        const terrain = await Terrain.findById(id);
+        if (!terrain) return res.status(404).json({ message: 'Terrain not found' });
+
+        // Supprimer la disponibilité
+        terrain.disponibilites = terrain.disponibilites.filter(
+            dispo => dispo._id.toString() !== disponibiliteId
+        );
+        await terrain.save();
+
+        res.status(200).json({ message: 'Disponibilité supprimée', terrain });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Mettre à jour le tarif horaire d'un terrain
+exports.mettreAJourTarif = async (req, res) => {
+    try {
+        const { id } = req.params; // ID du terrain
+        const { tarifHoraire } = req.body;
+
+        const terrain = await Terrain.findByIdAndUpdate(
+            id,
+            { tarifHoraire },
+            { new: true, runValidators: true }
+        );
+        if (!terrain) return res.status(404).json({ message: 'Terrain not found' });
+
+        res.status(200).json({ message: 'Tarif horaire mis à jour', terrain });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Obtenir des statistiques sur les terrains
+exports.statistique = async (req, res) => {
+    try {
+        const terrains = await Terrain.find();
+        const totalTerrains = terrains.length;
+        const totalCapacite = terrains.reduce((sum, terrain) => sum + terrain.capacity, 0);
+        const tarifMoyen = terrains.reduce((sum, terrain) => sum + terrain.tarifHoraire, 0) / totalTerrains || 0;
+
+        res.status(200).json({
+            totalTerrains,
+            totalCapacite,
+            tarifMoyen: tarifMoyen.toFixed(2) // Arrondir à 2 décimales
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
