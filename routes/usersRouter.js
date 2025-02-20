@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 const userController = require('../controllers/userController');
+const User = require('../models/userSchema'); // Assurez-vous que le chemin est correct
+console.log(userController); 
+
 const upload = require('../middlewares/uploadFile');
 /* GET users listing. */
 router.post('/addUserClient',userController.addUserClient); 
@@ -21,7 +24,6 @@ router.post('/connecter', userController.seConnecter);
 router.put('/modifier-profil/:id', userController.modifierProfil);
 router.post('/admin', userController.createAdmin);
 router.post('/player', userController.createPlayer);
-router.post('/give-avis', userController.giveAvis);
-router.post('/reserve-terrain', userController.reserveTerrain);
+
 
 module.exports = router;

@@ -4,12 +4,13 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
-const userRouter = require('./routes/usersRouter');
 const terrainRouter = require('./routes/terrainRouter'); // Ensure this import is correct
 const reservationRouter = require('./routes/reservationRouter');
 const avisRouter = require('./routes/avisRouter');
 const notificationRouter = require('./routes/notificationRouter');
 const paymentRouter = require('./routes/paymentRouter');
+const adminRouter = require('./routes/adminRouter');
+const playerRouter = require('./routes/playerRouter');
 
 const { connectToMongoDb } = require("./config/db");
 
@@ -38,6 +39,8 @@ app.use("/reservations", reservationRouter);
 app.use("/avis", avisRouter);
 app.use("/notifications", notificationRouter);
 app.use("/payements", paymentRouter);
+app.use("/admin", adminRouter); // Routes spécifiques à l'admin
+app.use("/player", playerRouter); // Routes spécifiques au joueur
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -52,7 +55,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render("error");
+  res.json("error");
 });
 
 const server = http.createServer(app); //2

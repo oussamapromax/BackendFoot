@@ -1,6 +1,6 @@
 const Reservation = require('../models/reservationModel');
 const Payment = require('../models/PaymentModel');
-const Player = require('../models/Player');
+const Player = require('../models/userSchema');
 const Terrain = require('../models/TerrainModel');
 
 // Créer une réservation avec paiement

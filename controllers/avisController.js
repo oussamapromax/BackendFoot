@@ -1,5 +1,5 @@
 const Avis = require('../models/AvisModel');
-const Player = require('../models/Player');
+const Player = require('../models/userSchema');
 const Terrain = require('../models/TerrainModel');
 
 // Ajouter un avis (CREATE)

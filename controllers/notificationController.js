@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Notification = require('../models/NotificationModel');
-const Player = require('../models/Player');
+const Player = require('../models/userSchema');
 
 // Créer une notification et l'ajouter au joueur
 exports.createNotification = async (req, res) => {
