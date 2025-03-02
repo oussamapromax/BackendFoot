@@ -1,14 +1,14 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const playerController = require('../controllers/playerController');
+const playerController = require("../controllers/playerController");
 
+// ✅ Réserver un terrain
+router.get("/chercher", playerController.chercherTerrain);
 
+// ✅ Donner un avis
+router.post("/donner-avis", playerController.donnerAvis);
 
-
-
-// Routes spécifiques au Player
-router.post('/reserver-terrain', playerController.reserverTerrain);
-router.post('/donner-avis', playerController.donnerAvis);
-router.post('/payer-reservation', playerController.payerReservation);
+// ✅ Payer une réservation
+router.post("/payer-reservation", playerController.payerReservation);
 
 module.exports = router;

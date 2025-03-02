@@ -1,143 +1,60 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const options = { discriminatorKey: "role", timestamps: true };
+const userSchema = new mongoose.Schema({
+  username: { type: String, unique: true, sparse: true }, // ✅ Optionnel mais unique
+  email: { type: String, required: true, unique: true }, // ✅ Obligatoire et unique
+  password: { type: String, required: true  }, // ✅ Obligatoire
+  telephone: { type: String }, // ✅ Optionnel
+  role: { type: String, required: true, enum: ["Player", "Admin"] }, // ✅ Obligatoire
+  etat: { type: Boolean, default: true }, // ✅ Par défaut : true (actif)
+  ban: { type: Boolean, default: false }, // ✅ Par défaut : false (non banni)
+  user_image: { type: String }, // ✅ Optionnel
+  agencesSupervisées: [{ type: mongoose.Schema.Types.ObjectId, ref: "Agence" }], // ✅ Optionnel
+  reservations: [{ type: mongoose.Schema.Types.ObjectId, ref: "Reservation" }], // Réservations du joueur
+  avis: [{ type: mongoose.Schema.Types.ObjectId, ref: "Avis" }], // Avis donnés par le joueur
+  notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: "Notification" }], // Notifications du joueur
+});
 
-const userSchema = new mongoose.Schema(
-  {
-    username: { type: String, required: true, unique: true },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      match: [/^\S+@\S+\.\S+$/, "Veuillez entrer une adresse e-mail valide"],
-    },
-    password: {
-      type: String,
-      required: true,
-      minLength: 8,
-    },
-    user_image: { type: String, default: "client.png" },
-    age: { type: Number },
-    count: { type: Number, default: 0 },
-  },
-  options
-);
 
-// **Hash du mot de passe avant l'enregistrement**
+// Hash du mot de passe avant l'enregistrement
+const argon2 = require("argon2");
+
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+  const user = this;
+
+  // Ne hacher le mot de passe que s'il est modifié ou nouveau
+  if (user.isModified("password")) {
+    try {
+      user.password = await argon2.hash(user.password);
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
     next();
-  } catch (error) {
-    next(error);
   }
 });
 
-// **Méthode pour vérifier le mot de passe**
-userSchema.methods.verifierMotDePasse = async function (password) {
-  return await bcrypt.compare(password, this.password);
-};
+// Méthode statique de connexion
+userSchema.statics.login = async function (email, password) {
+  const user = await this.findOne({ email });
 
-// **Création du modèle principal**
-const User = mongoose.model("User", userSchema);
-
-// **Schéma spécifique au Player**
-const playerSchema = new mongoose.Schema(
-  {
-    notifications: [
-      {
-        message: { type: String, required: true },
-        date: { type: Date, default: Date.now },
-      },
-    ],
-  },
-  options
-);
-
-// **Ajout des méthodes au schéma du Player**
-playerSchema.methods.giveAvis = async function (terrainId, rating, comment) {
-  try {
-      const avis = new Avis({
-          playerId: this._id, // Utiliser l'ID du joueur actuel
-          terrainId,
-          rating,
-          comment,
-      });
-      await avis.save();
-      return avis;
-  } catch (error) {
-      throw new Error(error.message);
+  if (!user) {
+    throw new Error("Utilisateur non trouvé.");
   }
-};
-playerSchema.methods.reserveTerrain = async function (terrainId, date, heureDebut, heureFin, montantTotal) {
-  try {
-    const terrain = await Terrain.findById(terrainId);
-    if (!terrain) throw new Error("Terrain non trouvé");
 
-    const reservation = new Reservation({
-      playerId: this._id,
-      terrainId,
-      date,
-      heureDebut,
-      heureFin,
-      montantTotal,
-      statut: "pending",
-    });
-    await reservation.save();
-    return reservation;
-  } catch (error) {
-    throw new Error(error.message);
+  if (!user.password) {
+    throw new Error("Erreur interne : aucun mot de passe stocké.");
   }
-};
 
-playerSchema.methods.payerReservation = async function (reservationId, montant, methode) {
-  try {
-      const reservation = await Reservation.findById(reservationId);
-      if (!reservation) {
-          throw new Error("Réservation non trouvée");
-      }
-
-      if (montant < reservation.montantTotal) {
-          throw new Error("Le montant payé est insuffisant");
-      }
-
-      const payment = new Payment({
-          reservationId: reservation._id,
-          montant,
-          methode,
-      });
-
-      await payment.effectuerPaiement(); // Effectuer le paiement
-
-      reservation.paymentId = payment._id;
-      reservation.statut = "confirmed";
-      await reservation.save();
-
-      return payment;
-  } catch (error) {
-      throw new Error(error.message);
+  const auth = await bcrypt.compare(password, user.password);
+  console.log("Comparaison du mot de passe :", auth)
+  if (!auth) {
+    throw new Error("Mot de passe incorrect.");
   }
-};
-// **Ajout du discriminator pour Player**
-const Player = User.discriminator("player", playerSchema);
 
-// **Ajout du discriminator pour Admin**
-const Admin = User.discriminator(
-  "admin",
-  new mongoose.Schema(
-    {
-      permissions: { type: [String], default: ["manage_users", "manage_reservations"] },
-    },
-    options
-  )
-);
-const Avis = require("./AvisModel");
-const Reservation = require("./reservationModel");
-const Terrain = require("./TerrainModel");
-const Payment = require("./PaymentModel");
-// Exportation des modèles
-module.exports = { User, Player, Admin };
+  return user;
+};
+
+module.exports = mongoose.model("User", userSchema);

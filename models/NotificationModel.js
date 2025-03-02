@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema({
     playerId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Player', 
+        ref: 'User', 
         required: true 
     },
     message: { type: String, required: true },

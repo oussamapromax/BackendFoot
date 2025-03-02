@@ -4,30 +4,26 @@ const Reservation = require('../models/reservationModel');
 // Créer un paiement (uniquement s'il n'existe pas déjà pour la réservation)
 exports.createPayment = async (req, res) => {
     try {
-        const { reservationId, montant, methode } = req.body;
-
-        // Vérifier si la réservation existe
-        const reservation = await Reservation.findById(reservationId);
-        if (!reservation) {
-            return res.status(404).json({ error: 'Réservation non trouvée' });
-        }
-
-        // Vérifier si un paiement existe déjà pour cette réservation
-        const existingPayment = await Payment.findOne({ reservationId });
-        if (existingPayment) {
-            return res.status(400).json({ error: 'Un paiement existe déjà pour cette réservation' });
-        }
-
-        // Créer le paiement
-        const payment = new Payment({ reservationId, montant, methode, statut: 'pending' });
-        await payment.save();
-
-        res.status(201).json({ message: 'Paiement créé avec succès', payment });
+      const { reservationId, montant, methode, agenceId } = req.body;
+  
+      // Vérifier si la réservation existe
+      const reservation = await Reservation.findById(reservationId);
+      if (!reservation) {
+        return res.status(404).json({ error: 'Réservation non trouvée' });
+      }
+  
+      // Supprimer le paiement existant s'il existe
+      await Payment.deleteOne({ reservationId });
+  
+      // Créer un nouveau paiement
+      const payment = new Payment({ reservationId, montant, methode, statut: 'pending', agenceId });
+      await payment.save();
+  
+      res.status(201).json({ message: 'Paiement créé avec succès', payment });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
-};
-
+  };
 // Obtenir tous les paiements
 exports.getPayments = async (req, res) => {
     try {

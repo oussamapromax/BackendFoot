@@ -1,29 +1,27 @@
-var express = require('express');
-var router = express.Router();
-const userController = require('../controllers/userController');
-const User = require('../models/userSchema'); // Assurez-vous que le chemin est correct
-console.log(userController); 
+const express = require("express");
+const router = express.Router();
+const userController = require("../controllers/userController");
+const upload = require("../middlewares/uploadFile");
+const { requireAuthUser } = require("../middlewares/authMiddleware");
 
-const upload = require('../middlewares/uploadFile');
-/* GET users listing. */
-router.post('/addUserClient',userController.addUserClient); 
-router.post('/addUserAdmin',userController.addUserAdmin); 
-router.get('/getAllUsers',userController.getAllUsers); 
-router.get('/getUserById/:id',userController.getUserById); 
-router.get('/searchUserByUsername',userController.searchUserByUsername); 
-router.get('/getAllUsersAge/:age',userController.getAllUsersAge); 
-router.get('/getAllUsersSortByAge',userController.getAllUsersSortByAge); 
-router.get('/getAllClient',userController.getAllClient); 
-router.get('/getAllAdmin',userController.getAllAdmin); 
-router.get('/getAllUsersAgeBetMaxAgeMinAge',userController.getAllUsersAgeBetMaxAgeMinAge); 
-router.put('/updateuserById/:id',userController.updateuserById); 
 
-router.post('/addUserClientWithImg',upload.single("image_user"),userController.addUserClientWithImg); 
-router.post('/inscrire', userController.sInscrire);
-router.post('/connecter', userController.seConnecter);
-router.put('/modifier-profil/:id', userController.modifierProfil);
-router.post('/admin', userController.createAdmin);
-router.post('/player', userController.createPlayer);
+// ✅ Inscription d'un utilisateur avec upload d'image
+router.post("/sInscrire", upload.single("user_image"), userController.sInscrire);
 
+
+// ✅ Mise à jour du profil avec upload d'image
+router.post('/signup/image', upload.single('user_image'), userController.addClientUserWithImage);
+
+// ✅ Connexion avec JWT
+router.post("/login",userController.login);
+
+// ✅ Déconnexion (clear JWT cookie)
+router.post("/logout", userController.logout);
+
+// Mettre à jour un utilisateur
+router.put("/users/:id", userController.updateUserById);
+
+// Supprimer un utilisateur
+router.delete("/users/:id", userController.deleteUserById);
 
 module.exports = router;

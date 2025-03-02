@@ -3,19 +3,21 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-
+const session = require("express-session"); //session
+const cors = require("cors");
 const terrainRouter = require('./routes/terrainRouter'); // Ensure this import is correct
 const reservationRouter = require('./routes/reservationRouter');
 const avisRouter = require('./routes/avisRouter');
 const notificationRouter = require('./routes/notificationRouter');
 const paymentRouter = require('./routes/paymentRouter');
+const agenceRouter = require('./routes/agenceRouter');
+const GeminiRouter = require('./routes/GeminiRouter');
 const adminRouter = require('./routes/adminRouter');
 const playerRouter = require('./routes/playerRouter');
-
 const { connectToMongoDb } = require("./config/db");
 
 require("dotenv").config();
-
+const logMiddleware = require('./middlewares/logsMiddlewares.js'); //log
 
 const http = require("http"); //1
 
@@ -40,7 +42,27 @@ app.use("/avis", avisRouter);
 app.use("/notifications", notificationRouter);
 app.use("/payements", paymentRouter);
 app.use("/admin", adminRouter); // Routes spécifiques à l'admin
-app.use("/player", playerRouter); // Routes spécifiques au joueur
+app.use("/players", playerRouter); // Routes spécifiques au joueur
+app.use("/agence", agenceRouter); // Routes spécifiques a l  agence
+app.use("/gemini", GeminiRouter); // Routes spécifiques a l  agence
+
+app.use(logMiddleware)  //log
+
+app.use(cors({
+  origin:"http://localhost:3000",
+  methods:"GET,POST,PUT,Delete",
+}))
+
+app.use(session({   //cobfig session
+  secret: "net secret pfe",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: {secure: false},
+    maxAge: 24*60*60,
+  
+  },  
+}))
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
