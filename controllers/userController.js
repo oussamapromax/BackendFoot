@@ -195,6 +195,8 @@ module.exports = {
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé." });
       }
+      //get users
+    
 
       // Supprimer l'utilisateur
       await User.findByIdAndDelete(id);
@@ -204,4 +206,12 @@ module.exports = {
       res.status(500).json({ message: "Erreur lors de la suppression de l'utilisateur." });
     }
   },
+  getAllUsers : async (req,res) => {
+    try {
+        const userListe = await User.find()
+        res.status(200).json({userListe});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}
 };

@@ -23,5 +23,7 @@ router.put("/users/:id", userController.updateUserById);
 
 // Supprimer un utilisateur
 router.delete("/users/:id", userController.deleteUserById);
+// getAllUtilisateurs
+router.get("/", userController.getAllUsers);
 
 module.exports = router;
